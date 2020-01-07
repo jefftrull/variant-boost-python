@@ -17,3 +17,6 @@ print(produceSomething(False))  # 'surprise!'
 print(foo(3.14))                # <vip.Foo object at 0x...>
 print(foo(Foo(42, "hello")))    # 'hello variant'
 
+# reference wrappers
+bar(Foo(42, "hello"))           # const ref to Foo
+bar(7)                          # regular parameter

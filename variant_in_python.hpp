@@ -86,6 +86,22 @@ void strict_numeric_convertible()
 
 }
 
+// utility metafunction
+template <typename T>
+struct remove_reference_wrapper
+{
+    using type = T;
+};
+
+template <typename T>
+struct remove_reference_wrapper<typename std::reference_wrapper<T>>
+{
+    using type = T;
+};
+
+template <typename T>
+using remove_reference_wrapper_t = typename remove_reference_wrapper<T>::type;
+
 }
 
 template <typename... T>
@@ -94,19 +110,27 @@ void register_variant_converter()
     using namespace boost;
     using var_t = std::variant<T...>;
 
-    mp11::mp_for_each<mp11::mp_list<T...>>(
+    mp11::mp_for_each<
+        mp11::mp_transform<
+            std::add_pointer_t,      // T* can always be default constructed
+            mp11::mp_list<T...>>>(
             [](auto t){
+                using arg_t = std::decay_t<std::remove_pointer_t<decltype(t)>>;
+
+                // variant<reference_wrapper<T>> can accept T directly
+                using val_t = remove_reference_wrapper_t<arg_t>;
+
                 // all the numeric types are super comfy converting to each other
                 // and it produces unexpected behavior
                 // use our own conservative conversion instead
-                if constexpr (std::is_arithmetic_v<decltype(t)>)
+                if constexpr (std::is_arithmetic_v<val_t>)
                 {
-                    strict_numeric_convertible<decltype(t), var_t>();
+                    strict_numeric_convertible<val_t, var_t>();
                 }
                 else
                 {
-                    // otherwise take advantage of all the built-in conversions
-                    python::implicitly_convertible<decltype(t), var_t>();
+                    // otherwise take advantage of the existing built-in conversions
+                    python::implicitly_convertible<val_t, var_t>();
                 }
             });
 }

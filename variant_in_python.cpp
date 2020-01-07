@@ -30,6 +30,7 @@
 #include <string>
 #include <variant>
 #include <iostream>
+#include <functional>
 
 //
 // create some wrapping examples involving variants
@@ -57,6 +58,11 @@ struct Foo
     Foo() = default;
     Foo(int i, std::string s) : i_(i), s_(s) {}
 
+    Foo(Foo const& other) : i_{other.i_}, s_{other.s_}
+    {
+        std::cout << "copy!\n";  // 3 times if reference_wrapper used; 5 otherwise (-O3)
+    }
+
 private:
     int i_;
     std::string s_;
@@ -76,6 +82,13 @@ foo(std::variant<double, Foo> const & var)
             }
         },
         var);
+}
+
+// using std::reference_wrapper
+void bar(std::variant<int, std::reference_wrapper<Foo const>> var)
+{
+    std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << "\n"; },
+               var);
 }
 
 BOOST_PYTHON_MODULE(vip) {
@@ -99,5 +112,9 @@ BOOST_PYTHON_MODULE(vip) {
                         variant_to_pyobj<Foo, std::string>>();    // result variant
 
     def("foo", foo);                                              // function using both
+
+    // (lvalue) reference wrappers
+    register_variant_converter<int, std::reference_wrapper<Foo const>>();
+    def("bar", bar);
 
 }
