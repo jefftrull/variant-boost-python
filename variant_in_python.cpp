@@ -37,13 +37,15 @@
 //
 
 // demonstrate a variant argument
-void doSomething(std::variant<double, int, bool> const & a)
+using var_arg_t = std::variant<double, int, bool>;
+void doSomething(var_arg_t const & a)
 {
     std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << "\n"; }, a);
 }
 
 // a variant return type
-std::variant<std::string, double>
+using var_ret_t = std::variant<std::string, double>;
+var_ret_t
 produceSomething(bool useDouble)
 {
     if (useDouble)
@@ -69,11 +71,13 @@ private:
 };
 
 // and using that class in a variant
-std::variant<Foo, std::string>
-foo(std::variant<double, Foo> const & var)
+using var_cc_arg_t = std::variant<double, Foo>;
+using var_cc_ret_t = std::variant<Foo, std::string>;
+var_cc_ret_t
+foo(var_cc_arg_t const & var)
 {
     return std::visit(
-        [](auto const & v) -> std::variant<Foo, std::string> {
+        [](auto const & v) -> var_cc_ret_t {
             if constexpr (std::is_same_v<std::decay_t<decltype(v)>, double>)
             {
                 return Foo{42, "goodbye"};
@@ -85,7 +89,8 @@ foo(std::variant<double, Foo> const & var)
 }
 
 // using std::reference_wrapper
-void bar(std::variant<int, std::reference_wrapper<Foo const>> var)
+using rw_var_t = std::variant<int, std::reference_wrapper<Foo const>>;
+void bar(rw_var_t var)
 {
     std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << "\n"; },
                var);
@@ -95,26 +100,26 @@ BOOST_PYTHON_MODULE(vip) {
     using namespace boost::python;
 
     // register convertibility of doSomething's variant types from Python
-    register_variant_converter<double, int, bool>();
+    register_variant_converter<var_arg_t>();
 
     def("doSomething", doSomething);
 
     // register conversion of produceSomething's return type back to Python
-    to_python_converter<std::variant<std::string, double>,
-                        variant_to_pyobj<std::string, double>>();
+    to_python_converter<var_ret_t,
+                        variant_to_pyobj<var_ret_t>>();
 
     def("produceSomething", produceSomething);
 
     // An example using a custom wrapped class
     class_<Foo>("Foo", init<int, std::string>());                 // the class
-    register_variant_converter<double, Foo>();                    // argument variant
-    to_python_converter<std::variant<Foo, std::string>,
-                        variant_to_pyobj<Foo, std::string>>();    // result variant
+    register_variant_converter<var_cc_arg_t>();                   // argument variant
+    to_python_converter<var_cc_ret_t,
+                        variant_to_pyobj<var_cc_ret_t>>();        // result variant
 
     def("foo", foo);                                              // function using both
 
     // (lvalue) reference wrappers
-    register_variant_converter<int, std::reference_wrapper<Foo const>>();
+    register_variant_converter<rw_var_t>();
     def("bar", bar);
 
 }
