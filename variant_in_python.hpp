@@ -99,14 +99,15 @@ void monostate_convertible()
 
     // convertible only for None
     auto convertible = [](PyObject * obj) -> void*
-                       { return (obj == Py_None) ? obj : 0; };
+                       { return (obj == Py_None) ? obj : nullptr; };
 
     // construct in place
     auto construct =
         [](PyObject*,
            converter::rvalue_from_python_stage1_data* data)
         {
-            void* storage = ((converter::rvalue_from_python_storage<Variant>*)data)->storage.bytes;
+            void* storage =
+                reinterpret_cast<converter::rvalue_from_python_storage<Variant>*>(data)->storage.bytes;
             new (storage) Variant();
             data->convertible = storage;
         };
