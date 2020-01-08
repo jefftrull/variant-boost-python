@@ -115,10 +115,14 @@ struct register_variant_converter_impl<std::variant<T...>>
         using namespace boost;
         using var_t = std::variant<T...>;
 
+        // std::monostate should be excluded from conversions
+        using convertible_types =
+            mp11::mp_remove<mp11::mp_list<T...>, std::monostate>;
+
         mp11::mp_for_each<
             mp11::mp_transform<
                 std::add_pointer_t,      // T* can always be default constructed
-                mp11::mp_list<T...>>>(
+                convertible_types>>(
                     [](auto t){
                         using arg_t = std::decay_t<std::remove_pointer_t<decltype(t)>>;
 
@@ -168,8 +172,14 @@ struct variant_to_pyobj<std::variant<T...>>
         // convert variant by recursively visiting stored types T...
         return std::visit(
             [](auto const & v){
-                // convert this type
-                return boost::python::to_python_value<decltype(v)>()(v);
+                if constexpr (std::is_same_v<std::decay_t<decltype(v)>,
+                                             std::monostate>)
+                {
+                    return Py_None;
+                } else {
+                    // convert this type
+                    return boost::python::to_python_value<decltype(v)>()(v);
+                }
             },
             var);
     }
