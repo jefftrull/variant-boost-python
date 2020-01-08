@@ -26,6 +26,7 @@
 #include <boost/python/converter/registry.hpp>
 #include <boost/python/converter/rvalue_from_python_data.hpp>
 #include <boost/python/converter/registrations.hpp>
+#include <boost/python/to_python_converter.hpp>
 
 #include <boost/mp11/list.hpp>
 #include <boost/mp11/algorithm.hpp>
@@ -184,18 +185,6 @@ struct register_variant_converter_impl<std::variant<T...>>
     }
 };
 
-}   // anonymous namespace
-
-//
-// helper function
-//
-
-template <typename T>
-void register_variant_converter()
-{
-    register_variant_converter_impl<T>()();
-}
-
 //
 // converting return values
 //
@@ -229,5 +218,25 @@ struct variant_to_pyobj<std::variant<T...>>
     // of the variant types, i.e. "return type" varies
 };
 
+}   // anonymous namespace
 
+//
+// helper functions
+//
 
+// from Python
+template <typename T>
+void register_variant_converter()
+{
+    register_variant_converter_impl<T>()();
+}
+
+// to Python
+template <typename Variant>
+void variant_to_python_converter()
+{
+    using namespace boost::python;
+
+    to_python_converter<Variant,
+                                 variant_to_pyobj<Variant>>();
+}

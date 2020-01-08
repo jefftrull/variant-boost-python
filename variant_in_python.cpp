@@ -113,16 +113,14 @@ BOOST_PYTHON_MODULE(vip) {
     def("doSomething", doSomething);
 
     // register conversion of produceSomething's return type back to Python
-    to_python_converter<var_ret_t,
-                        variant_to_pyobj<var_ret_t>>();
+    variant_to_python_converter<var_ret_t>();
 
     def("produceSomething", produceSomething);
 
     // An example using a custom wrapped class
     class_<Foo>("Foo", init<int, std::string>());                 // the class
     register_variant_converter<var_cc_arg_t>();                   // argument variant
-    to_python_converter<var_cc_ret_t,
-                        variant_to_pyobj<var_cc_ret_t>>();        // result variant
+    variant_to_python_converter<var_cc_ret_t>();                  // result variant
 
     def("foo", foo);                                              // function using both
 
@@ -132,8 +130,7 @@ BOOST_PYTHON_MODULE(vip) {
 
     // accepting None
     register_variant_converter<maybe_empty_var_t>();
-    to_python_converter<maybe_empty_var_t,
-                        variant_to_pyobj<maybe_empty_var_t>>();
+    variant_to_python_converter<maybe_empty_var_t>();
     def("baz", baz);
 
 }
