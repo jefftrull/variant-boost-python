@@ -86,6 +86,43 @@ void strict_numeric_convertible()
 
 }
 
+// monostate converter
+// for when you want to allow empty variants
+// converts None to a default-constructed variant
+
+template<typename Variant>
+void monostate_convertible()
+{
+    using namespace boost::python;
+
+    // required code is *mostly* trivial
+
+    // convertible only for None
+    auto convertible = [](PyObject * obj) -> void*
+                       { return (obj == Py_None) ? obj : 0; };
+
+    // construct in place
+    auto construct =
+        [](PyObject*,
+           converter::rvalue_from_python_stage1_data* data)
+        {
+            void* storage = ((converter::rvalue_from_python_storage<Variant>*)data)->storage.bytes;
+            new (storage) Variant();
+            data->convertible = storage;
+        };
+
+    // this is the None converter
+
+    // register a converter to Variant from std::monostate
+    // it will just default-construct a Variant
+    converter::registry::push_back(
+          convertible
+        , construct
+        , type_id<Variant>()
+        );      // expected_pytype for None would have to return &PyNone_Type,
+                // which is "not exposed" per docs. Leaving this out seems to work.
+}
+
 // utility metafunction
 template <typename T>
 struct remove_reference_wrapper
@@ -115,14 +152,10 @@ struct register_variant_converter_impl<std::variant<T...>>
         using namespace boost;
         using var_t = std::variant<T...>;
 
-        // std::monostate should be excluded from conversions
-        using convertible_types =
-            mp11::mp_remove<mp11::mp_list<T...>, std::monostate>;
-
         mp11::mp_for_each<
             mp11::mp_transform<
                 std::add_pointer_t,      // T* can always be default constructed
-                convertible_types>>(
+                mp11::mp_list<T...>>>(
                     [](auto t){
                         using arg_t = std::decay_t<std::remove_pointer_t<decltype(t)>>;
 
@@ -135,6 +168,11 @@ struct register_variant_converter_impl<std::variant<T...>>
                         if constexpr (std::is_arithmetic_v<val_t>)
                         {
                             strict_numeric_convertible<val_t, var_t>();
+                        }
+                        else if constexpr (std::is_same_v<arg_t, std::monostate>)
+                        {
+                            // use special converter for None
+                            monostate_convertible<var_t>();
                         }
                         else
                         {
@@ -169,13 +207,15 @@ struct variant_to_pyobj<std::variant<T...>>
 {
     static PyObject* convert(std::variant<T...> const & var)
     {
+        using namespace boost::python;
+
         // convert variant by recursively visiting stored types T...
         return std::visit(
             [](auto const & v){
                 if constexpr (std::is_same_v<std::decay_t<decltype(v)>,
                                              std::monostate>)
                 {
-                    return Py_None;
+                    return incref(object().ptr());  // refcounted &Py_None
                 } else {
                     // convert this type
                     return boost::python::to_python_value<decltype(v)>()(v);
@@ -185,7 +225,7 @@ struct variant_to_pyobj<std::variant<T...>>
     }
 
     // we cannot have a "get_pytype" method because we may return any
-    // of the variant types.
+    // of the variant types, i.e. "return type" varies
 };
 
 

@@ -96,6 +96,14 @@ void bar(rw_var_t var)
                var);
 }
 
+// using Nones
+using maybe_empty_var_t = std::variant<std::monostate, int>;
+maybe_empty_var_t baz(maybe_empty_var_t var)
+{
+    // just echo it back
+    return var;
+}
+
 BOOST_PYTHON_MODULE(vip) {
     using namespace boost::python;
 
@@ -121,5 +129,11 @@ BOOST_PYTHON_MODULE(vip) {
     // (lvalue) reference wrappers
     register_variant_converter<rw_var_t>();
     def("bar", bar);
+
+    // accepting None
+    register_variant_converter<maybe_empty_var_t>();
+    to_python_converter<maybe_empty_var_t,
+                        variant_to_pyobj<maybe_empty_var_t>>();
+    def("baz", baz);
 
 }

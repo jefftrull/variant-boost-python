@@ -20,3 +20,9 @@ print(foo(Foo(42, "hello")))    # 'hello variant'
 # reference wrappers
 bar(Foo(42, "hello"))           # const ref to Foo
 bar(7)                          # regular parameter
+
+# treatment of std::monostate and None
+print(baz(12))                  # should be an int
+print(baz(None))                # should be None
+# bar(None)                     # should be error - bar requires a value
+
