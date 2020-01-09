@@ -40,90 +40,99 @@ namespace {
 // converting arguments
 //
 
-template<typename T>
-PyTypeObject const *
-numeric_expected_pytype()
-{
-    if constexpr (std::is_same_v<T, bool>)
-        return &PyBool_Type;
-
-    if constexpr (std::is_integral_v<T>)
-        return &PyLong_Type;
-
-    if constexpr (std::is_floating_point_v<T>)
-        return &PyFloat_Type;
-}
-
 template <typename T, typename Variant>
-void* numeric_convertible(PyObject* obj)
+struct strict_numeric_convertible
 {
-    if constexpr (std::is_same_v<T, bool>)
-        return PyBool_Check(obj) ? obj : 0;
+    strict_numeric_convertible()
+    {
+        using namespace boost::python;
 
-    if constexpr (std::is_integral_v<T>)
-        // PyLong_Check will return true for Python bools!
-        return (PyLong_Check(obj) && !PyBool_Check(obj)) ? obj : 0;
+        // register a conservative converter to Variant from T
+        // a small variation on the "implicit" converter
+        converter::registry::push_back(
+              &convertible                                 // our own conversion tester
+            , &converter::implicit<T, Variant>::construct  // the implicit constructor
+            , type_id<Variant>()
+            , &expected_pytype                             // our code
+            );
+    }
 
-    if constexpr (std::is_floating_point_v<T>)
-        return PyFloat_Check(obj) ? obj : 0;
+    static void*
+    convertible(PyObject* obj)
+    {
+        if constexpr (std::is_same_v<T, bool>)
+            return PyBool_Check(obj) ? obj : 0;
 
-    // TODO std::complex
+        if constexpr (std::is_integral_v<T>)
+            // PyLong_Check will return true for Python bools!
+            return (PyLong_Check(obj) && !PyBool_Check(obj)) ? obj : 0;
 
-}
+        if constexpr (std::is_floating_point_v<T>)
+            return PyFloat_Check(obj) ? obj : 0;
 
-template <typename T, typename Variant>
-void strict_numeric_convertible()
-{
-    using namespace boost::python;
+        // TODO std::complex
 
-    // register a conservative converter to Variant from T
-    // a small variation on the "implicit" converter
-    converter::registry::push_back(
-          &numeric_convertible<T, Variant>             // our own conversion tester
-        , &converter::implicit<T, Variant>::construct  // the implicit constructor
-        , type_id<Variant>()
-        , &numeric_expected_pytype<T>                  // our code
-        );
+    }
 
-}
+    static PyTypeObject const *
+    expected_pytype()
+    {
+        if constexpr (std::is_same_v<T, bool>)
+            return &PyBool_Type;
+
+        if constexpr (std::is_integral_v<T>)
+            return &PyLong_Type;
+
+        if constexpr (std::is_floating_point_v<T>)
+            return &PyFloat_Type;
+    }
+
+};
+
 
 // monostate converter
 // for when you want to allow empty variants
 // converts None to a default-constructed variant
 
 template<typename Variant>
-void monostate_convertible()
+struct monostate_convertible
 {
-    using namespace boost::python;
+    monostate_convertible()
+    {
+        using namespace boost::python;
 
-    // required code is *mostly* trivial
+        // register a converter to Variant from std::monostate
+        // it will just default-construct a Variant
+        converter::registry::push_back(
+              convertible
+            , construct
+            , type_id<Variant>()
+            );      // expected_pytype for None would have to return &PyNone_Type,
+                    // which is "not exposed" per docs. Leaving this out seems to work.
+
+    }
 
     // convertible only for None
-    auto convertible = [](PyObject * obj) -> void*
-                       { return (obj == Py_None) ? obj : nullptr; };
+    static void*
+    convertible(PyObject * obj)
+    {
+        return (obj == Py_None) ? obj : nullptr;
+    };
 
     // construct in place
-    auto construct =
-        [](PyObject*,
-           converter::rvalue_from_python_stage1_data* data)
-        {
-            void* storage =
-                reinterpret_cast<converter::rvalue_from_python_storage<Variant>*>(data)->storage.bytes;
-            new (storage) Variant();
-            data->convertible = storage;
-        };
+    static void
+    construct(PyObject*,
+              boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        using namespace boost::python;
 
-    // this is the None converter
+        void* storage =
+            reinterpret_cast<converter::rvalue_from_python_storage<Variant>*>(data)->storage.bytes;
+        new (storage) Variant();
+        data->convertible = storage;
+    };
 
-    // register a converter to Variant from std::monostate
-    // it will just default-construct a Variant
-    converter::registry::push_back(
-          convertible
-        , construct
-        , type_id<Variant>()
-        );      // expected_pytype for None would have to return &PyNone_Type,
-                // which is "not exposed" per docs. Leaving this out seems to work.
-}
+};
 
 // utility metafunction
 template <typename T>
@@ -158,7 +167,7 @@ struct register_variant_converter_impl<std::variant<T...>>
             mp11::mp_transform<
                 std::add_pointer_t,      // T* can always be default constructed
                 mp11::mp_list<T...>>>(
-                    [](auto t){
+                    [](auto t){          // t is default constructed :)
                         using arg_t = std::decay_t<std::remove_pointer_t<decltype(t)>>;
 
                         // variant<reference_wrapper<T>> can accept T directly
@@ -238,5 +247,5 @@ void variant_to_python_converter()
     using namespace boost::python;
 
     to_python_converter<Variant,
-                                 variant_to_pyobj<Variant>>();
+                        variant_to_pyobj<Variant>>();
 }
