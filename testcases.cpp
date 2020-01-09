@@ -40,7 +40,7 @@
 using var_arg_t = std::variant<double, int, bool>;
 void doSomething(var_arg_t const & a)
 {
-    std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << "\n"; }, a);
+    std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << std::endl; }, a);
 }
 
 // a variant return type
@@ -92,7 +92,7 @@ foo(var_cc_arg_t const & var)
 using rw_var_t = std::variant<int, std::reference_wrapper<Foo const>>;
 void bar(rw_var_t var)
 {
-    std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << "\n"; },
+    std::visit([](auto const & v) { std::cout << "got a " << typeid(v).name() << std::endl; },
                var);
 }
 
@@ -104,7 +104,7 @@ maybe_empty_var_t baz(maybe_empty_var_t var)
     return var;
 }
 
-BOOST_PYTHON_MODULE(vip) {
+BOOST_PYTHON_MODULE(tc) {
     using namespace boost::python;
 
     // register convertibility of doSomething's variant types from Python
