@@ -10,6 +10,7 @@ find_package( Boost 1.69 REQUIRED COMPONENTS python37 )
 find_package( Python3 COMPONENTS Development )
 
 # C++ code
-add_library( vip SHARED variant_in_python.cpp )
-target_link_libraries( vip Boost::python37 Python3::Python )
-set_target_properties( vip PROPERTIES PREFIX "" )
+add_library( tc SHARED testcases.cpp )
+target_link_libraries( tc Boost::python37 Python3::Python )
+set_target_properties( tc PROPERTIES PREFIX "" )
+
