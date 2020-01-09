@@ -5,6 +5,8 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 set( CMAKE_CXX_STANDARD 17 )
 
+add_compile_options(-Wall -Wextra -Werror)
+
 # dependencies
 find_package( Boost 1.69 REQUIRED COMPONENTS python37 )
 find_package( Python3 COMPONENTS Development )
@@ -14,3 +16,10 @@ add_library( tc SHARED testcases.cpp )
 target_link_libraries( tc Boost::python37 Python3::Python )
 set_target_properties( tc PROPERTIES PREFIX "" )
 
+enable_testing()
+
+add_test(
+  NAME basic_functionality
+  COMMAND pytest-3
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
