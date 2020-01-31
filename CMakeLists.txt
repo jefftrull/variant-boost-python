@@ -25,7 +25,17 @@ add_library( s2 SHARED strategy2.cpp )
 target_link_libraries( s2 Boost::python37 Python3::Python )
 set_target_properties( s2 PROPERTIES PREFIX "" )
 
-# example using std::variant described in blog
+# the old approach examples redone using std::variant
+add_library( using_variant1 SHARED using_variant1.cpp )
+target_link_libraries( using_variant1 Boost::python37 Python3::Python )
+set_target_properties( using_variant1 PROPERTIES PREFIX "" )
+
+add_library( using_variant2 SHARED using_variant2.cpp )
+target_link_libraries( using_variant2 Boost::python37 Python3::Python )
+set_target_properties( using_variant2 PROPERTIES PREFIX "" )
+
+
+# more complex example using std::variant described in blog
 add_library( blog_example SHARED blog_example.cpp )
 target_link_libraries( blog_example Boost::python37 Python3::Python )
 set_target_properties( blog_example PROPERTIES PREFIX "" )
