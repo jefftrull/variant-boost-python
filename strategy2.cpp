@@ -38,13 +38,13 @@ double mag(std::any v)
     auto * d = std::any_cast<double>(&v);
     if (d)
     {
-        return (*d < 0.0) ? (-*d) : *d;
+        return std::fabs(*d);
     } else {
         // Boost.Python screens the possible values for us
         // via the implicit conversion rules we define below
         // so v must be complex
         auto c = std::any_cast<std::complex<double>>(v);
-        return std::sqrt((c.real() * c.real()) + (c.imag() * c.imag()));
+        return std::abs(c);
     }
 
 }

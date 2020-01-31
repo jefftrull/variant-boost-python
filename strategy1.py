@@ -30,4 +30,5 @@ def mag(v):
         return magScalar(v)
 
 if __name__ == "__main__":
-    print(mag((3+4j)))
+    print(mag(3+4j))
+    print(mag(-3.14))
