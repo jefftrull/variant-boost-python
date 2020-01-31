@@ -9,7 +9,9 @@ In particular it's often the case that Python values supplied to, or returned fr
 ## Goals
 1. For a parameter of C++ type `std::variant<A, B, C>` I want Python users to be able to pass any of the Python equivalents of `A`, `B`, or `C`
 2. An exception should be thrown if the Python value is not one of the variant's types
-3. A variant return value should be converted to whichever of the variant types was present
+3. The Python value `None` should only be accepted if `std::monostate` is one of the member types
+4. Member types wrapped with `std::reference_wrapper` should be accepted without copying the wrapped type
+5. A variant return value should be converted to whichever of the variant types was present
 
 In this way the use of `variant` should be invisible to Python users (outside of type checking) and
 appear like the dynamic typing they are used to.
