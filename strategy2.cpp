@@ -1,4 +1,4 @@
-// second strategy: bind one function and a single "python value" type, dispatch in C++
+// second strategy: bind one function per type, then dispatch from Python
 // Copyright (c) 2020 Jeff Trull
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,41 +23,25 @@
 #include <boost/python/def.hpp>
 #include <boost/python/init.hpp>
 #include <boost/python/module.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/exception_translator.hpp>
 
 #include <cmath>
 #include <complex>
-#include <any>
-#include <iostream>
 
-double mag(std::any v)
+double magScalar(double v)
 {
-    // dispatch in C++ from this single function
-
-    auto * d = std::any_cast<double>(&v);
-    if (d)
-    {
-        return std::fabs(*d);
-    } else {
-        // Boost.Python screens the possible values for us
-        // via the implicit conversion rules we define below
-        // so v must be complex
-        auto c = std::any_cast<std::complex<double>>(v);
-        return std::abs(c);
-    }
-
+    return std::fabs(v);
 }
 
-BOOST_PYTHON_MODULE(strategy2) {
+double magComplex(std::complex<double> v)
+{
+    return std::abs(v);
+}
+
+BOOST_PYTHON_MODULE(s2) {
     using namespace boost::python;
 
-    // use std::any as our generic value container
-    // specify the types it can be converted from
-    implicitly_convertible<double, std::any>();
-    implicitly_convertible<std::complex<double>, std::any>();
-
-    // tell it about our function
-    def("mag", mag);
+    // register both functions and let Python code choose
+    def("magScalar", magScalar);
+    def("magComplex", magComplex);
 
 }

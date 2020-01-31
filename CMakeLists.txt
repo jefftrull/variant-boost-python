@@ -16,13 +16,14 @@ find_package( Python3 COMPONENTS Development )
 #
 
 # old approaches for contrast with std::variant
-add_library( s1 SHARED strategy1.cpp )
-target_link_libraries( s1 Boost::python37 Python3::Python )
-set_target_properties( s1 PROPERTIES PREFIX "" )
+add_library( strategy1 SHARED strategy1.cpp )
+target_link_libraries( strategy1 Boost::python37 Python3::Python )
+set_target_properties( strategy1 PROPERTIES PREFIX "" )
 
-add_library( strategy2 SHARED strategy2.cpp )
-target_link_libraries( strategy2 Boost::python37 Python3::Python )
-set_target_properties( strategy2 PROPERTIES PREFIX "" )
+# this one has a Python wrapper
+add_library( s2 SHARED strategy2.cpp )
+target_link_libraries( s2 Boost::python37 Python3::Python )
+set_target_properties( s2 PROPERTIES PREFIX "" )
 
 # example using std::variant described in blog
 add_library( blog_example SHARED blog_example.cpp )

@@ -1,4 +1,4 @@
-# Python-side dispatch for first strategy (bind one function per type, dispatch in Python)
+# Python-side dispatch for second strategy (bind one function per type, dispatch in Python)
 
 # Copyright (c) 2020 Jeff Trull
 
@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from s1 import magScalar, magComplex
+from s2 import magScalar, magComplex
 
 def mag(v):
     # dispatch from Python to per-type C++ functions
