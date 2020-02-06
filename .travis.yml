@@ -6,10 +6,6 @@ sudo: false
 
 dist: bionic
 
-compiler:
-  - clang
-  - gcc
-
 python: "3.7"
 
 matrix:
