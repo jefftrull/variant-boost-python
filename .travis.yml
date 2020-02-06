@@ -14,19 +14,21 @@ matrix:
       addons:
         apt:
           update: true
+          sources:
+            - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - gcc-8
-            - libboost-all-dev
-            - libboost-python-dev
+            - libboost1.67-all-dev
 
     - compiler: clang
       addons:
         apt:
           update: true
+          sources:
+            - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - clang-9
-            - libboost-all-dev
-            - libboost-python-dev
+            - libboost1.67-all-dev
 
 
 before_script:
