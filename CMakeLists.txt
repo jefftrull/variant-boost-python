@@ -8,7 +8,7 @@ set( CMAKE_CXX_STANDARD 17 )
 add_compile_options(-Wall -Wextra -Werror)
 
 # dependencies
-find_package( Boost 1.69 REQUIRED COMPONENTS python37 )
+find_package( Boost 1.65 REQUIRED COMPONENTS python37 )
 find_package( Python3 COMPONENTS Development )
 
 #
