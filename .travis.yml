@@ -18,7 +18,7 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - gcc-8
-            - libboost1.67-all-dev
+            - libboost
 
     - compiler: clang
       addons:
@@ -28,7 +28,7 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
           packages:
             - clang-9
-            - libboost1.67-all-dev
+            - libboost
 
 
 before_script:
