@@ -1,0 +1,39 @@
+# CI configuration
+
+language: cpp
+
+sudo: false
+
+dist: bionic
+
+compiler:
+  - clang
+  - gcc
+
+python: "3.7"
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          update: true
+          packages:
+            - gcc-8
+            - libboost-all-dev
+
+    - compiler: clang
+      addons:
+        apt:
+          update: true
+          packages:
+            - clang-9
+            - libboost-all-dev
+
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+
+script: make && make test
