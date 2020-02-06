@@ -15,7 +15,7 @@ matrix:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
+            - sourceline: 'ppa:hnakamur/boost'
           packages:
             - gcc-8
             - libboost1.67-dev
@@ -25,7 +25,7 @@ matrix:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
+            - sourceline: 'ppa:hnakamur/boost'
           packages:
             - clang-9
             - libboost1.67-dev
