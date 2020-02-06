@@ -19,6 +19,7 @@ matrix:
           packages:
             - gcc-8
             - libboost1.67-dev
+            - libboost-python1.67-dev
 
     - compiler: clang
       addons:
@@ -29,6 +30,7 @@ matrix:
           packages:
             - clang-9
             - libboost1.67-dev
+            - libboost-python1.67-dev
 
 
 before_script:
