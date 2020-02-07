@@ -15,11 +15,12 @@ matrix:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:hnakamur/boost'
+            - sourceline: 'ppa:hnakamur/boost'  # the one PPA that had 1.67 with boost_python
           packages:
             - gcc-8
             - libboost1.67-dev
             - libboost-python1.67-dev
+            - python3-pytest
 
     - compiler: clang
       addons:
@@ -31,6 +32,7 @@ matrix:
             - clang-9
             - libboost1.67-dev
             - libboost-python1.67-dev
+            - python3-pytest
 
 
 before_script:
