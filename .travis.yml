@@ -4,13 +4,13 @@ language: cpp
 
 sudo: false
 
-dist: bionic
-
 python: "3.6"
 
 matrix:
   include:
-    - compiler: gcc
+    - os: linux
+      dist: bionic
+      compiler: g++
       addons:
         apt:
           update: true
@@ -22,7 +22,9 @@ matrix:
             - libboost-python1.67-dev
             - python3-pytest
 
-    - compiler: clang
+    - os: linux
+      dist: bionic
+      compiler: clang
       addons:
         apt:
           update: true
@@ -36,8 +38,7 @@ matrix:
 
 
 before_script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - cmake -E make_directory build
+  - cmake -E chdir build cmake -DCMAKE_BUILD_TYPE=Release ..
 
-script: make && make test
+script: cmake --build build && cmake --build build --target test
